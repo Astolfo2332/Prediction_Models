@@ -68,7 +68,7 @@ legend('Y2')
 
 %% Eliminar el offset
 
-pos_off=find(t1<=12.44);
+pos_off=find(t1<=9.18);
 U1_=U1-ones(size(U1,1),1)*mean(U1(pos_off));
 Y1_=Y1-ones(size(U1,1),1)*mean(Y1(pos_off));
 %validación
@@ -76,18 +76,53 @@ U2_=U2-ones(size(U2,1),1)*mean(U2); %NO  se donde comienza a ser constante enton
 Y2_=Y2-ones(size(U2,1),1)*mean(Y2);
 figure(5)
 subplot(211)
-graficar(t1,U1,'Señal entrada evaluación sin offset','Tiempo (s)','Amplitud')
+graficar(t1,U1_,'Señal entrada evaluación sin offset','Tiempo (s)','Amplitud')
 legend('U1')
 subplot(212)
-graficar(t1,Y1,'Señal salida evaluación recortada','Tiempo (s)','Amplitud')
+graficar(t1,Y1_,'Señal salida evaluación sin offseet','Tiempo (s)','Amplitud')
 legend('Y1')
 
 figure(6)
 subplot(211)
-graficar(t2,U2,'Señal entrada validación sin offser','Tiempo (s)','Amplitud')
+graficar(t2,U2_,'Señal entrada validación sin offset','Tiempo (s)','Amplitud')
 legend('U2')
 subplot(212)
-graficar(t2,Y2,'Señal salida validación recortada','Tiempo (s)','Amplitud')
+graficar(t2,Y2_,'Señal salida validación sin offset','Tiempo (s)','Amplitud')
 legend('Y2')
-%%
-!git config --global core.longpaths true
+%% periodo
+
+%no hay de donde recortar
+%% Análisis de frecuencia
+
+ts=min(diff(t));
+
+fs=1/ts;
+
+fsn=100;
+fsn1=50;
+fsn2=10;
+
+n=round(fs/fsn1); %sujeto a modificaciones
+
+t1=downsample(t1,n);
+t2=downsample(t2,n);
+U1=downsample(U1_,n);
+U2=downsample(U2_,n);
+Y1=downsample(Y1_,n);
+Y2=downsample(Y2_,n);
+
+figure(7)
+subplot(211)
+graficar(t1,U1,'Señal entrada validación procesado','Tiempo (s)','Amplitud')
+legend('U1')
+subplot(212)
+graficar(t1,Y1,'Señal salida validación procesado','Tiempo (s)','Amplitud')
+legend('Y1')
+
+figure(8)
+subplot(211)
+graficar(t2,U2,'Señal entrada validación procesado','Tiempo (s)','Amplitud')
+legend('U2')
+subplot(212)
+graficar(t2,Y2,'Señal salida validación procesado','Tiempo (s)','Amplitud')
+legend('Y2')
