@@ -76,18 +76,18 @@ U2_=U2-ones(size(U2,1),1)*mean(U2); %NO  se donde comienza a ser constante enton
 Y2_=Y2-ones(size(U2,1),1)*mean(Y2);
 figure(5)
 subplot(211)
-graficar(t1,U1,'Señal entrada evaluación sin offset','Tiempo (s)','Amplitud')
+graficar(t1,U1_,'Señal entrada evaluación sin offset','Tiempo (s)','Amplitud')
 legend('U1')
 subplot(212)
-graficar(t1,Y1,'Señal salida evaluación recortada','Tiempo (s)','Amplitud')
+graficar(t1,Y1_,'Señal salida evaluación recortada','Tiempo (s)','Amplitud')
 legend('Y1')
 
 figure(6)
 subplot(211)
-graficar(t2,U2,'Señal entrada validación sin offser','Tiempo (s)','Amplitud')
+graficar(t2,U2_,'Señal entrada validación sin offser','Tiempo (s)','Amplitud')
 legend('U2')
 subplot(212)
-graficar(t2,Y2,'Señal salida validación recortada','Tiempo (s)','Amplitud')
+graficar(t2,Y2_,'Señal salida validación recortada','Tiempo (s)','Amplitud')
 legend('Y2')
 %%
 !git config --global core.longpaths true
