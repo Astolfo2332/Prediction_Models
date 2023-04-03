@@ -126,3 +126,64 @@ legend('U2')
 subplot(212)
 graficar(t2,Y2,'Señal salida validación procesado','Tiempo (s)','Amplitud')
 legend('Y2')
+%% Parametricas 
+U1=U1';Y1=Y1';Y2=Y2';U2=U2'; % Se arreglan los vectores
+%Se crea el iddata
+data_1=iddata(Y1,U1,ts);
+data_2=iddata(Y2,U2,ts);
+% Busqueda del retardo
+nk=delayest(data_1)
+nk2=delayest(data_2)
+%% Busqueda del modelo
+%Empezamos por ARX
+
+NN=struc(1:5,1:5,1:5);
+%Estimando el modelo
+v=arxstruc(data_1,data_2,NN);
+%Para error y orden a partir de los coeficientes
+[orden_arx,vmod]=selstruc(v,"AIC");
+%Ya conociendo los coeficientes se construye el modelo
+M_ARX=arx(data_1,"na",orden_arx(1,1),"nb",orden_arx(1,2),"nk",orden_arx(1,3));
+present(M_ARX)
+%%
+%Comparamos el modelo con los datos reales
+figure()
+compare(data_2,M_ARX)
+%% Error de las salidas
+[salida_arx,fit_arx0,x_arx]=compare(data_2,M_ARX);
+e_arx=errorr(salida_arx.y,data_2.y) %Se compara el error con el modelo encontrado
+%% Comparando la entrada con el modelo
+compare(M_ARX,data_1)
+%% ARMAX 
+%Creación de la tabla
+datosARMAX(:,1)=["Na","Nb","Nc","Nk","fit","MSE"];
+%%
+N=length(U1);
+i=2;
+AIC_armax=[];
+v_armax=[];
+for na=1:5
+    for nb=1:5
+        for nc=1:5
+            for nk=1:5
+            datos=[na,nb,nc,nk];
+            M_armax=armax(data_1,datos);
+            fit=M_armax.Report.Fit.FitPercent;
+            MSE=M_armax.Report.Fit.MSE;
+            datosARMAX(:,i)=[na,nb,nc,nk,fit,MSE];
+            [yse_armax,fit_e_armax,x0e_armax]=compare(data_2,M_armax);
+            Error=errorr(yse_armax.y,data_2.y);
+            v_armax=[v_armax,[Error;na;nb;nc;nk]];
+            %AIC
+            d=sum(datos);
+            vmin=aic_(Error,d,N);
+            AIC_armax=[AIC_armax,[vmin;na;nb;nc;nk]];
+            i=i+1;
+            end
+        end
+    end
+end
+%% minimo AIC
+minaic=find(min(AIC_armax(1,:))==AIC_armax(1,:));
+a=AIC_armax(:,minaic)
+
