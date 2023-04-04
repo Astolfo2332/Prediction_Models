@@ -184,6 +184,43 @@ for na=1:5
     end
 end
 %% minimo AIC
-minaic=find(min(AIC_armax(1,:))==AIC_armax(1,:));
-a=AIC_armax(:,minaic)
-
+b=minaic(AIC_armax);
+M_armax=armax(data_1,b(1,2:5));
+present(M_armax)
+%% Validaciones
+figure()
+compare(data_1,M_armax)
+figure()
+compare(data_2,M_armax)
+%% OE
+%% OE
+v_oe=[];
+AIC_oe=[];
+for i=1:5
+    for j=1:5
+        for k=1:5
+            M_oe=oe(data_1,[i,j,k]);
+            [yse_oe,fit_e_oe,x0e_oe]=compare(data_2,M_oe);
+            Error=errorr(yse_oe.y,data_2.y);
+            v_oe=[v_oe,[Error;i;j;k]];
+            d=sum(datos);
+            vmin=aic_(Error,d,N);
+            AIC_oe=[AIC_oe,[vmin;i;j;k]];
+        end
+    end
+end
+%% minimo AIC
+b=minaic(AIC_oe);
+M_or=oe(data_1,b(1,2:4));
+present(M_oe)
+%% Validaciones
+figure()
+compare(data_1,M_oe)
+figure()
+compare(data_2,M_oe)
+%% funciones
+function b=minaic(datos)
+    minaic_=find(min(datos(1,:))==datos(1,:));
+    b=datos(:,minaic_);
+    b=b';
+end
