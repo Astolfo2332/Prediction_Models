@@ -1,6 +1,6 @@
 clc;clear all;close all;
 load 'DataE1.mat'
-%load Datos.mat
+load Datos.mat %Para cargar los datos y no tener que correr los modelos
 %pasar todo a vectores fila
 t=t';
 U1=U1';Y1=Y1';Y2=Y2';
