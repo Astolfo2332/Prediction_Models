@@ -1,5 +1,6 @@
 clc;clear all;close all;
 load 'DataE1.mat'
+%load Datos.mat
 %pasar todo a vectores fila
 t=t';
 U1=U1';Y1=Y1';Y2=Y2';
@@ -33,7 +34,7 @@ legend('U2')
 %salida
 subplot(212)
 plot(t,Y2)
-title('Salida evalución')
+title('Salida validación')
 xlabel('Tiempo (s)')
 ylabel('Amplitud')
 legend('Y2')
@@ -69,8 +70,10 @@ legend('Y2')
 %% Eliminar el offset
 
 pos_off=find(t1<=9.18);
-U1_=U1-ones(size(U1,1),1)*mean(U1(pos_off));
-Y1_=Y1-ones(size(U1,1),1)*mean(Y1(pos_off));
+%U1_=U1-ones(size(U1,1),1)*mean(U1(pos_off));
+%Y1_=Y1-ones(size(U1,1),1)*mean(Y1(pos_off));
+U1_=U1-ones(size(U1,1),1)*7; %A ojo lo puse en 7 solo para ver como cambian los modelos: Miguel
+Y1_=Y1-ones(size(U1,1),1)*7; 
 %validación
 U2_=U2-ones(size(U2,1),1)*mean(U2); %NO  se donde comienza a ser constante entonces solo con el promedio de si misma
 Y2_=Y2-ones(size(U2,1),1)*mean(Y2);
@@ -146,17 +149,12 @@ M_ARX=arx(data_1,orden_arx);
 present(M_ARX)
 %%
 %Comparamos el modelo con los datos reales
-figure()
-compare(data_2,M_ARX)
-figure()
-compare(data_1,M_ARX)
+comparedata(M_ARX,data_1,data_2)
 %% Error de las salidas
 [salida_arx,fit_arx0,x_arx]=compare(data_2,M_ARX);
 e_arx=errorr(salida_arx.y,data_2.y) %Se compara el error con el modelo encontrado
-%% Comparando la entrada con el modelo
 
-
-%%
+%% ARMAX
 N=length(U1);
 i=2;
 AIC_armax=[];
@@ -164,7 +162,7 @@ v_armax=[];
 for na=1:5
     for nb=1:5
         for nc=1:5
-            for nk=1:5
+            for nk=0:5
             datos=[na,nb,nc,nk];
             M_armax=armax(data_1,datos);
             fit=M_armax.Report.Fit.FitPercent;
@@ -182,23 +180,42 @@ for na=1:5
         end
     end
 end
+
 %% minimo AIC
 b=minaic(AIC_armax);
 M_armax=armax(data_1,b(1,2:5));
 present(M_armax)
-%% Validaciones
-figure()
-compare(data_1,M_armax)
-figure()
-compare(data_2,M_armax)
-%% OE
+comparedata(M_armax,data_1,data_2)
+%% minimo error
+b=minaic(v_armax);
+M_armax=armax(data_1,b(1,2:5));
+present(M_armax)
+comparedata(M_armax,data_1,data_2)
+%% Mejor forma de ARMAX
+na = 1:4;
+nb = 1:4;
+nc = 1:4;
+nk= 0:4;
+NN = struc(na,nb,nc,nk); 
+modelsarmax = cell(size(NN,1),1);
+for ct = 1:size(NN,1)
+   modelsarmax{ct} = armax(data_1, NN(ct,:));
+end
+%% AIC
+V = aic(modelsarmax{:},'AICc');
+[Vmin,I] = min(V);
+M_armax=modelsarmax{I};
+present(M_armax)
+%%
+comparedata(M_armax,data_1,data_2)
 %% OE
 v_oe=[];
 AIC_oe=[];
 for i=1:5
     for j=1:5
         for k=1:5
-            M_oe=oe(data_1,[i,j,k]);
+            datos=[i,j,k];
+            M_oe=oe(data_1,datos);
             [yse_oe,fit_e_oe,x0e_oe]=compare(data_2,M_oe);
             Error=errorr(yse_oe.y,data_2.y);
             v_oe=[v_oe,[Error;i;j;k]];
@@ -208,18 +225,97 @@ for i=1:5
         end
     end
 end
+
 %% minimo AIC
 b=minaic(AIC_oe);
-M_or=oe(data_1,b(1,2:4));
+M_oe=oe(data_1,b(1,2:4));
 present(M_oe)
-%% Validaciones
-figure()
-compare(data_1,M_oe)
-figure()
-compare(data_2,M_oe)
+comparedata(M_oe,data_1,data_2)
+%% minimo error
+b=minaic(v_oe);
+M_oe=oe(data_1,b(1,2:4));
+present(M_oe)
+comparedata(M_oe,data_1,data_2)
+%% Mejor forma de oe
+nf = 1:5;
+nb = 1:5;
+nk = 0:5;
+NN = struc(nf,nb,nk); 
+modelsoe = cell(size(NN,1),1);
+for ct = 1:size(NN,1)
+   modelsoe{ct} = oe(data_1, NN(ct,:));
+end
+%% AIC
+V = aic(modelsoe{:},'AIC');
+[Vmin,I] = min(V);
+M_oe=modelsoe{I};
+present(M_oe)
+%%
+comparedata(M_oe,data_1,data_2)
+%% BJ
+v_bj=[];
+AIC_bj=[];
+for i=1:3
+    for j=1:3
+        for k=1:3
+            for l=1:3
+                for m=1:3
+                datos=[i,j,k,l,m];
+                M_bj=bj(data_1,datos);
+                [yse_bj,fit_e_bj,x0e_bj]=compare(data_2,M_bj);
+                Error=errorr(yse_bj.y,data_2.y);
+                v_bj=[v_bj,[Error;i;j;k;l;m]];
+                d=sum(datos);
+                vmin=aic_(Error,d,N);
+                AIC_bj=[AIC_bj,[vmin;i;j;k;l;m]];
+                end
+            end
+        end
+    end
+end
+%% minimo AIC
+b=minaic(AIC_bj);
+M_bj=bj(data_1,b(1,2:6));
+present(M_bj)
+comparedata(M_bj,data_1,data_2)
+
+%% minimo error
+b=minaic(v_bj);
+M_bj=bj(data_1,b(1,2:6));
+present(M_bj)
+comparedata(M_bj,data_1,data_2)
+%% Mejor forma de bj
+nb = 1:4;
+nc = 1:4;
+nd = 1:4;
+nf= 0:4;
+nk=0:4;
+NN = struc(nb,nc,nd,nf,nk); 
+modelsbj = cell(size(NN,1),1);
+for ct = 1:size(NN,1)
+   modelsbj{ct} = bj(data_1, NN(ct,:));
+end
+%% AIC
+V = aic(modelsbj{:},'AICc');
+[Vmin,I] = min(V);
+M_bj=modelsbj{I};
+present(M_bj)
+%%
+comparedata(M_bj,data_1,data_2)
+%% para no tener que correr todo el codigo
+save Datos.mat
+
 %% funciones
 function b=minaic(datos)
     minaic_=find(min(datos(1,:))==datos(1,:));
     b=datos(:,minaic_);
     b=b';
+end
+function comparedata(modelo,data_1cop,data_2cop)
+    subplot(2,1,1)
+    compare(data_1cop,modelo)
+    title("Datos evaluación")
+    subplot(2,1,2)
+    compare(data_2cop,modelo)
+    title("Datos validación")
 end
