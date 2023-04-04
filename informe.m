@@ -136,27 +136,26 @@ nk=delayest(data_1)
 nk2=delayest(data_2)
 %% Busqueda del modelo
 %Empezamos por ARX
-
 NN=struc(1:5,1:5,1:5);
 %Estimando el modelo
 v=arxstruc(data_1,data_2,NN);
 %Para error y orden a partir de los coeficientes
 [orden_arx,vmod]=selstruc(v,"AIC");
 %Ya conociendo los coeficientes se construye el modelo
-M_ARX=arx(data_1,"na",orden_arx(1,1),"nb",orden_arx(1,2),"nk",orden_arx(1,3));
+M_ARX=arx(data_1,orden_arx);
 present(M_ARX)
 %%
 %Comparamos el modelo con los datos reales
 figure()
 compare(data_2,M_ARX)
+figure()
+compare(data_1,M_ARX)
 %% Error de las salidas
 [salida_arx,fit_arx0,x_arx]=compare(data_2,M_ARX);
 e_arx=errorr(salida_arx.y,data_2.y) %Se compara el error con el modelo encontrado
 %% Comparando la entrada con el modelo
-compare(M_ARX,data_1)
-%% ARMAX 
-%Creación de la tabla
-datosARMAX(:,1)=["Na","Nb","Nc","Nk","fit","MSE"];
+
+
 %%
 N=length(U1);
 i=2;
