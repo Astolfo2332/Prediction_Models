@@ -1,9 +1,13 @@
 clc;clear all;close all;
 load 'DataE1.mat'
+%%
 load Datos.mat %Para cargar los datos y no tener que correr los modelos
+%%
 %pasar todo a vectores fila
 t=t';
 U1=U1';Y1=Y1';Y2=Y2';
+t1=t;
+t2=t;
 %%
 %graficar los datos Validación
 
@@ -92,9 +96,46 @@ legend('U2')
 subplot(212)
 graficar(t2,Y2_,'Señal salida validación sin offset','Tiempo (s)','Amplitud')
 legend('Y2')
-%% periodo
+%% Prueba sin recortar ni quitar el offset
+t1=t;
+t2=t;
+ts=min(diff(t));
 
-%no hay de donde recortar
+fs=1/ts;
+fsn1=100;
+%% recortar un periodo
+recorte=find((12.5<=t1)&(t1<=37.5));
+t1=t(recorte);
+U1=U1(recorte);
+Y1=Y1(recorte);
+%%
+
+n=round(fs/fsn1); %sujeto a modificaciones
+
+t1=downsample(t1,n);
+t2=downsample(t2,n);
+U1=downsample(U1,n);
+U2=downsample(U2,n);
+Y1=downsample(Y1,n);
+Y2=downsample(Y2,n);
+%%
+
+figure(7)
+subplot(211)
+graficar(t1,U1,'Señal entrada validación procesado','Tiempo (s)','Amplitud')
+legend('U1')
+subplot(212)
+graficar(t1,Y1,'Señal salida validación procesado','Tiempo (s)','Amplitud')
+legend('Y1')
+
+figure(8)
+subplot(211)
+graficar(t2,U2,'Señal entrada validación procesado','Tiempo (s)','Amplitud')
+legend('U2')
+subplot(212)
+graficar(t2,Y2,'Señal salida validación procesado','Tiempo (s)','Amplitud')
+legend('Y2')
+
 %% Análisis de frecuencia
 
 ts=min(diff(t));
@@ -132,14 +173,14 @@ legend('Y2')
 %% Parametricas 
 U1=U1';Y1=Y1';Y2=Y2';U2=U2'; % Se arreglan los vectores
 %Se crea el iddata
-data_1=iddata(Y1,U1,ts);
-data_2=iddata(Y2,U2,ts);
+data_1=iddata(Y1,U1,1/fsn1);
+data_2=iddata(Y2,U2,1/fsn1); %Machetazo que es eso?
 % Busqueda del retardo
 nk=delayest(data_1)
 nk2=delayest(data_2)
 %% Busqueda del modelo
 %Empezamos por ARX
-NN=struc(1:5,1:5,1:5);
+NN=struc(1:3,1:3,1:3);
 %Estimando el modelo
 v=arxstruc(data_1,data_2,NN);
 %Para error y orden a partir de los coeficientes
@@ -192,17 +233,17 @@ M_armax=armax(data_1,b(1,2:5));
 present(M_armax)
 comparedata(M_armax,data_1,data_2)
 %% Mejor forma de ARMAX
-na = 1:4;
-nb = 1:4;
-nc = 1:4;
-nk= 0:4;
+na = 1:3;
+nb = 1:3;
+nc = 1:3;
+nk= 0:3;
 NN = struc(na,nb,nc,nk); 
 modelsarmax = cell(size(NN,1),1);
 for ct = 1:size(NN,1)
    modelsarmax{ct} = armax(data_1, NN(ct,:));
 end
 %% AIC
-V = aic(modelsarmax{:},'AICc');
+V = aic(modelsarmax{:},'AIC');
 [Vmin,I] = min(V);
 M_armax=modelsarmax{I};
 present(M_armax)
@@ -237,9 +278,9 @@ M_oe=oe(data_1,b(1,2:4));
 present(M_oe)
 comparedata(M_oe,data_1,data_2)
 %% Mejor forma de oe
-nf = 1:5;
-nb = 1:5;
-nk = 0:5;
+nf = 1:3;
+nb = 1:3;
+nk = 0:3;
 NN = struc(nf,nb,nk); 
 modelsoe = cell(size(NN,1),1);
 for ct = 1:size(NN,1)
@@ -285,18 +326,18 @@ M_bj=bj(data_1,b(1,2:6));
 present(M_bj)
 comparedata(M_bj,data_1,data_2)
 %% Mejor forma de bj
-nb = 1:4;
-nc = 1:4;
-nd = 1:4;
-nf= 0:4;
-nk=0:4;
+nb = 1:3;
+nc = 1:3;
+nd = 1:3;
+nf= 0:3;
+nk=0:3;
 NN = struc(nb,nc,nd,nf,nk); 
 modelsbj = cell(size(NN,1),1);
 for ct = 1:size(NN,1)
    modelsbj{ct} = bj(data_1, NN(ct,:));
 end
 %% AIC
-V = aic(modelsbj{:},'AICc');
+V = aic(modelsbj{:},'AIC');
 [Vmin,I] = min(V);
 M_bj=modelsbj{I};
 present(M_bj)
@@ -317,5 +358,7 @@ function comparedata(modelo,data_1cop,data_2cop)
     title("Datos evaluación")
     subplot(2,1,2)
     compare(data_2cop,modelo)
+    [yse_mod,fit_e_mod,x0e_mod]=compare(data_2cop,modelo);
+    Error=errorr(yse_mod.y,data_2cop.y)
     title("Datos validación")
 end
