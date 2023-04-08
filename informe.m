@@ -102,7 +102,7 @@ t2=t;
 ts=min(diff(t));
 
 fs=1/ts;
-fsn1=100;
+fsn1=500;
 %% recortar un periodo
 recorte=find((12.5<=t1)&(t1<=37.5));
 t1=t(recorte);
@@ -110,7 +110,7 @@ U1=U1(recorte);
 Y1=Y1(recorte);
 %%
 
-n=round(fs/fsn1); %sujeto a modificaciones
+n=3; %sujeto a modificaciones
 
 t1=downsample(t1,n);
 t2=downsample(t2,n);
@@ -173,6 +173,7 @@ legend('Y2')
 %% Parametricas 
 U1=U1';Y1=Y1';Y2=Y2';U2=U2'; % Se arreglan los vectores
 %Se crea el iddata
+fsn1=min(diff(t1));
 data_1=iddata(Y1,U1,1/fsn1);
 data_2=iddata(Y2,U2,1/fsn1); %Machetazo que es eso?
 % Busqueda del retardo
