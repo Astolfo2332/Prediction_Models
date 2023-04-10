@@ -130,11 +130,12 @@ NN = struc(na,nb,nc,nk);
 modelsarmax = cell(size(NN,1),1);
 for ct = 1:size(NN,1)
    modelsarmax{ct} = armax(data_1, NN(ct,:)); %Se almacena la información de cada modelo con los diferentes coeficientes en cada celda para su mejor comparación
+   modelsarmax{ct,2}=NN(ct,:);
 end
 %% AIC
-V = aic(modelsarmax{:},'AIC');
+V = aic(modelsarmax{:,1},'AIC');
 [Vmin_armax,I] = min(V);
-M_armax=modelsarmax{I};
+M_armax=modelsarmax{I,1};
 present(M_armax)
 %%
 comparedata(M_armax,data_1,data_2)
