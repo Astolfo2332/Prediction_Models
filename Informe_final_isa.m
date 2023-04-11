@@ -133,6 +133,8 @@ figure(8)
 [yarx,fit_ev_arx,xarx,yarx2,fit_val_arx,xarx2,e_]=comparedata(M_ARX,data_1,data_2,"(ARX)")
 %% Error de las salidas
 e_arx=errorr(yarx2.y,data_2.y); %Se compara el error con el modelo encontrado
+%% AIC por funcion directa
+Vmin_arx=aic(M_ARX,"AIC") %Se hace para así tener valores similares debido a la diferencia de como calcula el Acaike el selstruc y la función aic
 %% ARMAX
 %Se crean las estructuras
 na = 1:3;
