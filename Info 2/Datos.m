@@ -22,11 +22,11 @@ eqns=[dx==(dF-dFo)/cp,dx-dx1==(F-Fo)/R,dx1==dF/cs];
 sn=dsolve(eqns)
 
 %% Simular
-t=0.1:0.1:10;
+t=0.1:0.1:20;
 F=(0<t)*1;
 Fo=(0<t)*1;
 simin=[t.' F.' Fo.'];
-out=simular(R,cs,cp,10);
+out=simular(R,cs,cp,max(t));
 
 
 %% Funciones 
