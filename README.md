@@ -37,4 +37,5 @@
 ## 50K de puntos no es nada
 -Gracias Susana
 ## Cosas faciles si obvio
--Pero porque Mauricio nos dice que en mecanica es k y en electrico es 1/k, si cuando hago eso no da ni a bala el mugriento circuito
+~Pero porque Mauricio nos dice que en mecanica es k y en electrico es 1/k, si cuando hago eso no da ni a bala el mugriento circuito~
+-Simplemente lo que pasa es que soy muy bobo
