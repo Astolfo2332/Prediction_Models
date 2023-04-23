@@ -4,22 +4,21 @@
 R=0.5;
 cs=0.2;
 cp=2;
-%%
+
 % Ecuación porque no sé sumar
 %Por mallas
 syms x1(t) x(t) Fo F
 dx1=diff(x1,t);
 dx=diff(x,t);
 eqns=[F-cp*x-Fo-R*(dx-dx1)==0,Fo-cs*x1+R*(dx1-dx)==0];
-sm=dsolve(eqns)
+s=dsolve(eqns)
 %Por nodos 
 syms x1(t) x(t) Fo F
 dx1=diff(x1,t);
 dx=diff(x,t);
 dFo=diff(Fo,t);
 dF=diff(F,t);
-eqns=[dx==(dF-dFo)/cp,dx-dx1==(F-Fo)/R,dx1==dF/cs];
-sn=dsolve(eqns)
+eqns=[dx==(dF-dFo)/cp,dx-dx1==(F-Fo)/R,dx1=d]
 
 %% Simular
 t=0.1:0.1:10;
