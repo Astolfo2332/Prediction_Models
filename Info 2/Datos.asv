@@ -44,15 +44,16 @@ xlabel("tiempo(s)")
 ylabel("Desplazamiento (m)")
 end
 function [out,out2] =comparedata(a,b,time)
-sub1="R: "+num2str(a(1))+" cs: "+num2str(a(2))+" cp: "+num2str(a(3));
-sub2="R: "+num2str(b(1))+" cs: "+num2str(b(2))+" cp: "+num2str(b(3));
+sub1="R: "+num2str(a(1))+" cs: "+num2str(a(2))+" cp: "+num2str(a(3))
+sub2=
 R=a(1);
 cs=a(2);
 cp=a(3);
 out=sim("Modelo_Circuito.slx","StopTime",num2str(time));
 figure(1)
 bode(out.bodegraf.values)
-title(["Diagrama de Bode paciente 1",sub1])
+title(["Diagrama de Bode paciente 1"])
+subtitle()
 grid on
 R=b(1);
 cs=b(2);
@@ -60,7 +61,7 @@ cp=b(3);
 out2=sim("Modelo_Circuito.slx","StopTime",num2str(time));
 figure(2)
 bode(out2.bodegraf.values)
-title(["Diagrama de Bode paciente 2",sub2])
+title("Diagrama de Bode paciente 2")
 grid on
 x=out.simout.signals.values(:,1);
 y=out.simout.time;
@@ -68,14 +69,15 @@ figure(3)
 subplot(2,1,1)
 plot(y,x)
 title("Respuesta x paciente")
-subtitle(sub1)
+subtitle("R: "+num2str(a(1))+" cs: "+num2str(a(2))+" cp: "+num2str(a(3)))
+
 xlabel("tiempo(s)")
 ylabel("Desplazamiento (m)")
 subplot(2,1,2)
 x2=out2.simout.signals.values(:,1);
 plot(y,x2)
 title("Respuesta x paciente")
-subtitle(sub2)
+subtitle("R: "+num2str(b(1))+" cs: "+num2str(b(2))+" cp: "+num2str(b(3)))
 xlabel("tiempo(s)")
 ylabel("Desplazamiento (m)")
 end
