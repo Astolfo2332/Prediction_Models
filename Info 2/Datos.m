@@ -109,10 +109,5 @@ title("Respuesta x paciente")
 legend(sub1,sub2)
 end
 function evaluator(R,cs,cp)
-R=num2str(R);
-cs=num2str(cs);
-cp=num2str(cp);
-evalin("base","R="+R+";");
-evalin("base","cs="+cs+";");
-evalin("base","cp="+cp+";");
+evalin("base","R="+num2str(R)+";"+"cs="+num2str(cs)+";"+"cp="+num2str(cp)+";");
 end
