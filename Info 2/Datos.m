@@ -1,7 +1,7 @@
 %% No me juzgen no sé algebra tampoco
 syms s F Fo cs cp R x1 x
-eqn1=R*s*(x1-x)+(cs)*x1==Fo;
-eqn2=R*s*(x-x1)+(cp)*x==F-Fo;
+eqn1=R*s*(x1-x)+(1/cs)*x1==Fo;
+eqn2=R*s*(x-x1)+(1/cp)*x==F-Fo;
 sol=solve([eqn1,eqn2],[x,x1]);
 xsol=sol.x
 %% Variables normales
