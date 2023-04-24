@@ -8,7 +8,6 @@ xsol=sol.x
 R=0.5;
 cs=0.2;
 cp=2;
-
 %% Condiciones iniciales de pruebas
 t=0.1:0.1:20;
 F=(0<t)*1;
@@ -104,7 +103,7 @@ xlabel("tiempo(s)")
 ylabel("Desplazamiento (m)")
 x2=out2.simout.signals.values(:,1);
 y2=out2.simout.time;
-plot(y2,x2)
+plot(y2,x2,"--r")
 title("Respuesta x paciente")
 legend(sub1,sub2)
 end
