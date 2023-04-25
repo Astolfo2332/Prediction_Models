@@ -11,20 +11,28 @@ xsol=sol.x %Se muestra la solución con respecto a x
 R=0.5;
 cs=0.2;
 cp=2;
+t=0.1:0.1:20; %Se inicia el tiempo
+%Se inician los impulsos
+F=(0<t)*90;
+Fo=(0<t)*90;
+simin=[t.' F.' Fo.'];
+%% Simular con circuito electrico
+% Se simula contra el circuito electrico correspondiente para comprobar la
+% validez de la ecuación encontrada teoricamente.
+out=simular(R,cs,cp,max(t));
 %% Condiciones iniciales de pruebas
 %Para mayor control desde el codigo se decide por ingresar los datos desde
 %aqui
 t=0.1:0.1:20; %Se inicia el tiempo
 %Se inician las fuerzas como impulsos de la forma que se pueda variar si se
 %requiere
-F=(0<t)*1;
-Fo=(0<t)*1;
+p=10; %Peso del objeto
+g=9.81; %Gravedad
+c=0.8; %Proporcionalidad dependiendo de la elongación de los sarcomeros
+F=((0<t) & (t<5))*p*g;
+Fo=((0<t) & (t<5))*p*g*c;
 %Se crea el vector de entrada a la simulación
 simin=[t.' F.' Fo.'];
-%% Simular con circuito electrico
-% Se simula contra el circuito electrico correspondiente para comprobar la
-% validez de la ecuación encontrada teoricamente.
-out=simular(R,cs,cp,max(t));
 %% comparar datos 2 subplots
 a=[0.5 0.2 2];
 b=[0.75 0.314 3.14];
