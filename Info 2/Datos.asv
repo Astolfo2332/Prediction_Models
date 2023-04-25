@@ -26,24 +26,24 @@ out=simular(R,cs,cp,max(t));
 t=0.1:0.1:20; %Se inicia el tiempo
 %Se inician las fuerzas como impulsos de la forma que se pueda variar si se
 %requiere
-p=10; %Peso del objeto
+p=1; %Peso del objeto
 g=9.81; %Gravedad
 c=0.8; %Proporcionalidad dependiendo de la elongación de los sarcomeros
-tini=2;%Tiempo inicial de la señal cuadrada
-tfin=6;%Tiempo final de la señal cuadrada
-F=((tini<t) & (t<tfin))*p*g;
-Fo=((tini<t) & (t<tfin))*p*g*c;
+tini=0;%Tiempo inicial de la señal cuadrada
+tfin=5;%Tiempo final de la señal cuadrada
+F=((tini<t) & (tfin<5))*p*g;
+Fo=((tini<t) & (tfin<5))*p*g*c;
 %Se crea el vector de entrada a la simulación
 simin=[t.' F.' Fo.'];
 %% comparar datos 2 subplots
 a=[0.5 0.2 2];
 b=[0.75 0.314 3.14];
-[out,out2]=comparedata(a,b,max(t));
+[out,out2]=comparedata(a,b,10);
 
 %% Comparar datos legend
 a=[0.5 0.2 2];
 b=[0.75 0.314 3.14];
-[out,out2]=comparedata2(a,b,max(t));
+[out,out2]=comparedata2(a,b,15);
 %% Funciones
 %Para hacer el proceso más eficiente se crean varias funciones debido a que
 %se va a realizar las mismas operaciones constantemente
@@ -135,6 +135,7 @@ y=out.simout.time;
 %En este caso la diferencia es que se hace un solo grafico para una mejor
 %comparación de la grafica
 figure()
+subplot(2,1,1)
 plot(y,x)
 hold on
 title("Respuesta x paciente")
@@ -143,6 +144,17 @@ ylabel("Desplazamiento (m)")
 x2=out2.simout.signals.values(:,1);
 y2=out2.simout.time;
 plot(y2,x2,"--r")
+title("Respuesta x paciente")
+legend(sub1,sub2)
+subplot(2,1,2)
+plot(y,x)
+hold on
+title("Respuesta x paciente")
+xlabel("tiempo(s)")
+ylabel("Desplazamiento (m)")
+x2=out2.simout.signals.values(:,1);
+y2=out2.simout.time;
+plot(y2,diff(x2),"--r")
 title("Respuesta x paciente")
 legend(sub1,sub2)
 end
