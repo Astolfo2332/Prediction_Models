@@ -103,8 +103,9 @@ title("Respuesta obtenida con función de transferencia")
 xlabel("Tiempo(s)")
 ylabel("Desplazamiento (m)")
 xlim([0,10]);
-hold off
+
 end
+
 function [out,out2] =comparedata2(a,b,time,patologia)
 sub1="Sano ";
 sub2=patologia+" ";
@@ -132,6 +133,7 @@ plot(y2,x2,"k",'LineWidth',2)
 title("Comparación de respuesta")
 legend(sub1,sub2)
 xlim([0,15])
+hold off
 end
 function evaluator(R,cs,cp)
 %Esta función permite evaluar las constantes en el workspace, debido a que
