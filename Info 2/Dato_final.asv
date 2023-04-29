@@ -1,9 +1,4 @@
 clc;clear vars;close all;clear all;
-%% Nota: 
-%Se hizo la conversión del modelo a versiones anteriores pero posiblemente
-%se generen fallos debido a que hay librerias con problemas para ejecutarse
-%como la electrica, de ser posible correrlo en la versión más reciente. se
-%adjuntan las dos versiones.
 %% Ecuación de transeferencia
 % Se hace inicialmente de manera simbolica para comprobar la ecuación
 syms s F Fo cs cp R x1 x
@@ -72,9 +67,12 @@ simin=[t.' F.' Fo.'];
 
 a=[0.5 0.2 2]; % Sano
 b=[0.8 0.2 2]; % Fibromialgia
-c=[0.75 0.314 3.14]; %Fatiga
-[out,out2,out3]=comparedata2(a,b,c,max(t),"Fibromialgia","Fatiga");
-
+[out,out2]=comparedata2(a,b,max(t),"Fibromialgia");
+c=[0.75 0.314 3.14]; % Fatiga
+[out3,out4]=comparedata2(a,c,max(t),"Fatiga");
+%% Bode adicional
+bode(out.bodegraf.values,out2.bodegraf.values,out4.bodegraf.values)
+legend("Sano","Fibromialgia","Fatiga")
 %% Funciones
 %Para hacer el proceso más eficiente se crean varias funciones debido a que
 %se va a realizar las mismas operaciones constantemente
@@ -126,7 +124,6 @@ bode(out.bodegraf.values,out2.bodegraf.values,out3.bodegraf.values)
 h = findobj(gcf, 'type', 'line');
 set(h, 'LineWidth', 2); % Establecer grosor de línea a 2
 title(["Diagrama de Bode"])
-legend(sub1,sub2,sub3)
 grid on
 x=out.simout.signals.values(:,1);
 y=out.simout.time;
@@ -136,14 +133,13 @@ x3=out3.simout.signals.values(:,1);
 y3=out3.simout.time;
 % Comparación entre sano y patología
 figure()
-plot(y,x,"r",'LineWidth',2)
+plot(y,x,'LineWidth',2)
 hold on
 xlabel("Tiempo(s)")
 ylabel("Desplazamiento (m)")
-plot(y2,x2,"m",'LineWidth',2)
-plot(y3,x3,"k",'LineWidth',2)
+plot(y2,x2,"k",'LineWidth',2)
 title("Comparación de respuesta")
-legend(sub1,sub2,sub3)
+legend(sub1,sub2)
 xlim([0,15])
 hold off
 end
