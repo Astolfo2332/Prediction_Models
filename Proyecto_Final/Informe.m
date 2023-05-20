@@ -1,6 +1,7 @@
 %% Carga
 clc; clear all; close all;
 load("Experimento_A.mat")
+global u2 y2 t2
 t1=t1.';
 t2=t2.';
 %% 0.1 Exploración de los datos
@@ -26,13 +27,91 @@ subplot(1,2,2)
 plot(tv,yv)
 title("Salida Validacióm")
 %% 1 Filtrados iniciales
-%% Recorte offset
+%% Recorte offset 
 pos_off=find(t1<=1.33);
 u1=u1-ones(size(u1,1),1)*mean(u1(pos_off)); 
+u2=u2-ones(size(u2,1),1)*mean(u2(pos_off)); 
 %No se alcanza a ver claramente el punto estable
 y1=y1-ones(size(y1,1),1)*mean(y1); 
-yv=yv-ones(size(yv,1),1)*mean(yv); 
+yv=yv-ones(size(yv,1),1)*mean(yv);
+y2=y2-ones(size(y2,1),1)*mean(y2); 
 %No se le hacen cambios a uv ya que parece no tener offset aparente
+%% Grafica
+figure()
+subplot(3,2,1)
+plot(t1,u1)
+title("Entrada 1")
+subplot(3,2,2)
+plot(t1,y1)
+title("Salida 1")
+subplot(3,2,3)
+plot(tv,uv)
+title("Entrada de validación")
+subplot(3,2,4)
+plot(tv,yv)
+title("Salida Validación")
+subplot(3,2,5)
+plot(t2,u2)
+title("Entrada 2")
+subplot(3,2,6)
+plot(t2,y2)
+title("Salida 2")
+%% Recorte de los perdiodos de la señal
+% para la primera a travez del grafico y con data tips se puede observar el
+% periodo en el intervalo de 1.3 a 5.3
+recorte=find((1.33<=t1));
+
+t1=t1(recorte)-1.33;
+u1=u1(recorte);
+y1=y1(recorte);
+recorte=find(1.33<=t2);
+t2=t2(recorte)-1.33;
+u2=u2(recorte);
+y2=y2(recorte);
+%% Grafica
+figure()
+subplot(3,2,1)
+plot(t1,u1)
+title("Entrada 1")
+subplot(3,2,2)
+plot(t1,y1)
+title("Salida 1")
+subplot(3,2,3)
+plot(tv,uv)
+title("Entrada de validación")
+subplot(3,2,4)
+plot(tv,yv)
+title("Salida Validación")
+subplot(3,2,5)
+plot(t2,u2)
+title("Entrada 2")
+subplot(3,2,6)
+plot(t2,y2)
+title("Salida 2")
+%% Filtrado
+% En este caso la señal de entrada de prueba tiene bastante ruido, así que
+% utilizaremos un filtrado por fourier
+[T,f,p1] = No_Aprendi_nada_en_fourier(u1,t1);
+[T2,f2,p12] = No_Aprendi_nada_en_fourier(u2,t2);
+%% Grafica
+figure()
+plot(f,p1)
+figure()
+plot(f2,p12)
+%% Aplicación del filtro
+fs=(1/T(1))/2; %Niquist
+fs2=(1/T2(1))/2;
+% Frecuencias raras vistas en la grafica anterior
+u1 = fn_filtro(T,u1,2,[59,61]);
+[num,dem]=butter(2,59/fs,"low"); %Se hace un pasa bajas
+u1=filtfilt(num,dem,u1);
+figure()
+freqz(num,dem,4000,fs)
+u2 = fn_filtro(T2,u2,2,[59,61]);
+[num,dem]=butter(2,59/fs2,"low"); %Se hace un pasa bajas
+u2=filtfilt(num,dem,u2);
+figure()
+freqz(num,dem,4000,fs)
 %% Grafica
 figure()
 subplot(2,2,1)
@@ -42,46 +121,11 @@ subplot(2,2,2)
 plot(t1,y1)
 title("Salida 1")
 subplot(2,2,3)
-plot(tv,uv)
-title("Entrada de validación")
+plot(t2,u2)
+title("Entrada 2")
 subplot(2,2,4)
-plot(tv,yv)
-title("Salida Validación")
-%% Recorte de los perdiodos de la señal
-% para la primera a travez del grafico y con data tips se puede observar el
-% periodo en el intervalo de 1.3 a 5.3
-recorte=find((1.33<=t1)&(t1<=6.8));
-
-t1=t1(recorte);
-u1=u1(recorte);
-y1=y1(recorte);
-%% Grafica
-figure()
-subplot(1,2,1)
-plot(t1,u1)
-title("Entrada 1")
-subplot(1,2,2)
-plot(t1,y1)
-title("Salida 1")
-%% Filtrado
-% En este caso la señal de entrada de prueba tiene bastante ruido, así que
-% utilizaremos un filtrado por fourier
-[T,f,p1] = No_Aprendi_nada_en_fourier(u1,t1);
-%% Grafica
-figure()
-plot(f,p1)
-%% Aplicación del filtro
-u1 = fn_filtro(T,u1,2,[119,122]); % Frecuencias raras vistas en la grafica anterior
-u1 = fn_filtro(T,u1,2,[59,61]);
-
-%% Grafica
-figure()
-subplot(1,2,1)
-plot(t1,u1)
-title("Entrada 1")
-subplot(1,2,2)
-plot(t1,y1)
-title("Salida 1")
+plot(t2,y2)
+title("Salida 2")
 %En este casi ya no encontramos tanto ruido en la grafica
 %% Downsample 
 ts=min(diff(t1)); %Se ecuentra la frecuencia de muestreo
@@ -100,21 +144,7 @@ y1=downsample(y1,n);
 yv=downsample(yv,n);
 %% 
 %Se grafiacan los resultados del downsample
-figure()
-subplot(211)
-graficar(t1,u1,'Señal entrada validación procesado','Tiempo (s)','Amplitud')
-legend('U1')
-subplot(212)
-graficar(t1,y1,'Señal salida validación procesado','Tiempo (s)','Amplitud')
-legend('Y1')
 
-figure(7)
-subplot(211)
-graficar(t2,u2,'Señal entrada validación procesado','Tiempo (s)','Amplitud')
-legend('U2')
-subplot(212)
-graficar(t2,y2,'Señal salida validación procesado','Tiempo (s)','Amplitud')
-legend('Y2')
 %% 2 Parametricas  
 %Iniciamos los data
 data_1=iddata(y1,u1,1/fsn1);
@@ -198,6 +228,7 @@ present(M_bj)
 figure()
 [ybj,fit_ev_bj,xbj,ybj2,fit_val_bj,xbj2,e_bj]=comparedata(M_bj,data_1,data_2,"(BJ)")
 %% 3 Analisis de sensibilidad
+% Validación del modelo encontrado en tiempo
 M_oe_c = d2c(M_oe,'tustin');
 %oe
 y_pred_oe = lsim(M_oe_c,u1,t1);
@@ -215,6 +246,46 @@ legend('Y','Y predicha por OE')
 title('Salida real Vs. predicha (validación)')
 xlabel('Tiempo(s)')
 ylabel('Amplitud')
+%% extración de coeficientes 
+%Funcion transferencia
+H=tf(M_oe_c)
+[num,dem]=tfdata(H,"v");
+pararef=[num(1) num(2) num(3) num(4) dem(1) dem(2) dem(3) dem(4)];
+step=2;
+range=[-50 50];
+[J,para_change]= fn_sensible(pararef,step,range); %Recordar cambiar la funcion a evaluar
+%% Graf sensible
+figure()
+for i=1:length(pararef)
+    plot(para_change,J(:,i))
+    hold on
+end
+legend("A","B","C","D","E","F","G","H")
+%En este caso los valores más sensibles son en el caso de valores negativos
+%y F para valores positivos es C
+%% Optimización 
+C=pararef(3);
+D=pararef(4);
+F=pararef(6);
+H=pararef(8);
+theta_ini=[C D F H]; %Aplicamos un valor semilla a partir de los coeficiente de referencia y como estos interactuan con la ecuación
+%Recordar cambiar el Thetha ini
+%Cambiar los parametros en la de coste también
+[thetha,Fval,exitflag,output]=fminsearch("fn_coste",theta_ini); %Buscanos el minimo error con esos valores
+disp(' ')
+disp(' Final parameter values: ')
+disp(thetha);
+disp(output)
+%% Graficar coste
+figure()
+num(3)=thetha(1);
+num(4)=thetha(2);
+dem(3)=thetha(2);
+dem(4)=thetha(4);
+Hs=tf(num,dem);
+ypred=lsim(Hs,u2,t2);
+plot(t2,ypred,t2,y2)
+legend("Predicha", "real")
 %% funciones
 
 function [T,f,p1] = No_Aprendi_nada_en_fourier(in_r,t)
