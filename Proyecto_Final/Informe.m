@@ -29,12 +29,17 @@ title("Salida Validacióm")
 %% 1 Filtrados iniciales
 %% Recorte offset 
 pos_off=find(t1<=1.33);
-u1=u1-ones(size(u1,1),1)*mean(u1(pos_off)); 
-u2=u2-ones(size(u2,1),1)*mean(u2(pos_off)); 
+offu1=mean(u1(pos_off));
+offu2=mean(u2(pos_off));
+u1=u1-ones(size(u1,1),1)*offu1; 
+u2=u2-ones(size(u2,1),1)*offu2; 
 %No se alcanza a ver claramente el punto estable
-y1=y1-ones(size(y1,1),1)*mean(y1); 
-yv=yv-ones(size(yv,1),1)*mean(yv);
-y2=y2-ones(size(y2,1),1)*mean(y2); 
+offy1=mean(y1);
+offy2=mean(y2);
+offyv=mean(yv);
+y1=y1-ones(size(y1,1),1)*offy1; 
+yv=yv-ones(size(yv,1),1)*offyv;
+y2=y2-ones(size(y2,1),1)*offy2; 
 %No se le hacen cambios a uv ya que parece no tener offset aparente
 %% Grafica
 figure()
@@ -68,6 +73,14 @@ recorte=find(1.33<=t2);
 t2=t2(recorte)-1.33;
 u2=u2(recorte);
 y2=y2(recorte);
+%%
+n=2;
+u1=detrend(u1,n);
+y1=detrend(y1,n);
+u2=detrend(u2,n);
+y2=detrend(y2,n);
+uv=detrend(uv,n);
+yv=detrend(yv,n);
 %% Grafica
 figure()
 subplot(3,2,1)
@@ -230,26 +243,28 @@ figure()
 [ybj,fit_ev_bj,xbj,ybj2,fit_val_bj,xbj2,e_bj]=comparedata(M_bj,data_1,data_2,"(BJ)")
 %% 3 Analisis de sensibilidad
 % Validación del modelo encontrado en tiempo
-M_oe_c = d2c(M_oe,'tustin');
+M_ARX_c = d2c(M_ARX,'tustin');
 %oe
-y_pred_oe = lsim(M_oe_c,u1,t1);
-y_pred_oe_v = lsim(M_oe_c,uv,tv);
+ 
+y_pred_ARX = lsim(M_ARX_c,u1,t1);
+y_pred_v_ARX = lsim(M_ARX_c,uv,tv);
 figure()
 subplot(211)
-plot(t1,y1,t1,y_pred_oe)
-legend('Y','Y predicha por OE')
+off=min(y1);
+plot(t1,y1-off,t1,y_pred_ARX-off)
+legend('Y','Y predicha por ARX')
 title('Salida real Vs. predicha (evaluación)')
 xlabel('Tiempo(s)')
 ylabel('Amplitud')
 subplot(212)
-plot(tv,yv,tv,y_pred_oe_v)
-legend('Y','Y predicha por OE')
+plot(tv,yv+ones(size(yv,1),1)*offyv,tv,y_pred_v_ARX+ones(size(yv,1),1)*offyv)
+legend('Y','Y predicha por ARX')
 title('Salida real Vs. predicha (validación)')
 xlabel('Tiempo(s)')
 ylabel('Amplitud')
 %% extración de coeficientes 
 %Funcion transferencia
-H=tf(M_oe_c)
+H=tf(M_ARX_c)
 [num,dem]=tfdata(H,"v");
 pararef=[num(1) num(2) num(3) num(4) dem(1) dem(2) dem(3) dem(4)];
 step=2;
@@ -264,11 +279,10 @@ end
 legend("A","B","C","D","E","F","G","H")
 
 %% Optimización 
-B=pararef(2);
-C=pararef(3);
-G=pararef(6);
-F=pararef(7);
-theta_ini=[B C G F]; %Aplicamos un valor semilla a partir de los coeficiente de referencia y como estos interactuan con la ecuación
+D=pararef(4);
+G=pararef(7);
+
+theta_ini=[D G]; %Aplicamos un valor semilla a partir de los coeficiente de referencia y como estos interactuan con la ecuación
 %Recordar cambiar el Thetha ini
 %Cambiar los parametros en la de coste también
 [thetha,Fval,exitflag,output]=fminsearch("fn_coste",theta_ini); %Buscanos el minimo error con esos valores
@@ -278,13 +292,17 @@ disp(thetha);
 disp(output)
 %% Graficar coste
 figure()
-num(2)=thetha(1);
-num(3)=thetha(2);
-dem(2)=thetha(2);
-dem(3)=thetha(4);
+num(4)=thetha(1);
+dem(3)=thetha(2);
+
 Hs=tf(num,dem);
 ypred=lsim(Hs,u2,t2);
-plot(t2,ypred,t2,y2)
+offset=min(y2);
+graf_ypred=ypred-offset;
+graf_y2=y2-offset;
+plot(t2,graf_ypred,t2,graf_y2)
+errorr(ypred,y2)
+corrcoef(ypred,y2)
 legend("Predicha", "real")
 %% funciones
 

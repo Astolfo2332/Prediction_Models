@@ -9,13 +9,13 @@ for i = 1:Np %Se recorre las iteraciones (corresponde al largo de para ref)
     for k=1:num_steps %Se recorre el numero de pasos
         para=pararef; %Se guarda el parametro a evaluar 
         para(i)=pararef(i)*(1+para_change(k)/100); %Se va cambiando el parametro con cada iteración para evaluar su coste a medida de que cambia para_change
-        if para_change(k)==0 %Si el coeficiente es 0 va a dar una dar 0 entonces se hace de una vez el cambio
-            J(k,i)=0;
-        else
+        %if para_change(k)==0 %Si el coeficiente es 0 va a dar una dar 0 entonces se hace de una vez el cambio
+        %    J(k,i)=0;
+        %else
             ypred=fn_sys(para,u2,t2); %Se evalua la nueva funcion con los nuevos paramentros
             e=ypred-y2; 
             J(k,i)=sum(e.^2); %Se busca el error y se guarda en la posicion de k e i
-        end
+        %end
     end
 end
 %Cambiar esta función con la ecuación que estamos buscando
