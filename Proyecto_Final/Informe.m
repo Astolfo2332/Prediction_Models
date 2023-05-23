@@ -135,20 +135,21 @@ fsn1 = fs;
 fsn2 = fs/2;
 fsn3 = fs/3;
 %%
-n=round(fs/fsn1); %Cambiar dependiendo de la necesidad
+n=round(fs/fsn2); %Cambiar dependiendo de la necesidad
 
 t1=downsample(t1,n);
 u1=downsample(u1,n);
 uv=downsample(uv,n);
 y1=downsample(y1,n);
 yv=downsample(yv,n);
+tv=downsample(tv,n);
 %% 
 %Se grafiacan los resultados del downsample
 
 %% 2 Parametricas  
 %Iniciamos los data
-data_1=iddata(y1,u1,1/fsn1);
-data_2=iddata(yv,uv,1/fsn1);
+data_1=iddata(y1,u1,1/fsn2);
+data_2=iddata(yv,uv,1/fsn2);
 %% 2.1 ARX
 NN=struc(1:3,1:3,1:3);
 %Estimando el modelo
@@ -261,14 +262,13 @@ for i=1:length(pararef)
     hold on
 end
 legend("A","B","C","D","E","F","G","H")
-%En este caso los valores más sensibles son en el caso de valores negativos
-%y F para valores positivos es C
+
 %% Optimización 
+B=pararef(2);
 C=pararef(3);
-D=pararef(4);
-F=pararef(6);
-H=pararef(8);
-theta_ini=[C D F H]; %Aplicamos un valor semilla a partir de los coeficiente de referencia y como estos interactuan con la ecuación
+G=pararef(6);
+F=pararef(7);
+theta_ini=[B C G F]; %Aplicamos un valor semilla a partir de los coeficiente de referencia y como estos interactuan con la ecuación
 %Recordar cambiar el Thetha ini
 %Cambiar los parametros en la de coste también
 [thetha,Fval,exitflag,output]=fminsearch("fn_coste",theta_ini); %Buscanos el minimo error con esos valores
@@ -278,10 +278,10 @@ disp(thetha);
 disp(output)
 %% Graficar coste
 figure()
-num(3)=thetha(1);
-num(4)=thetha(2);
-dem(3)=thetha(2);
-dem(4)=thetha(4);
+num(2)=thetha(1);
+num(3)=thetha(2);
+dem(2)=thetha(2);
+dem(3)=thetha(4);
 Hs=tf(num,dem);
 ypred=lsim(Hs,u2,t2);
 plot(t2,ypred,t2,y2)
