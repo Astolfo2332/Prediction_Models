@@ -51,10 +51,11 @@ title("Salida de validación")
 pos_off=find(t1<=1.33);
 offu1=mean(u1(pos_off));
 offu2=mean(u2(pos_off));
-u1=u1-ones(size(u1,1),1)*offu1; 
+u1=u1-ones(size(u1,1),1)*offu1;  % eliminación de offset
 u2=u2-ones(size(u2,1),1)*offu2; 
 uv=uv-ones(size(uv,1),1)*4;
-% No se alcanza a ver claramente el punto estable
+% No se alcanza a ver claramente el punto estable, entonces se elimina el
+% offset como el promedio de toda la señal
 offy1=mean(y1);
 offy2=mean(y2);
 offyv=mean(yv);
@@ -128,15 +129,15 @@ title("Salida 2")
 %% Filtrado
 % En este caso la señal de entrada de prueba tiene bastante ruido, así que
 % utilizaremos un filtrado por fourier
-[T,f,p1] = No_Aprendi_nada_en_fourier(u1,t1);
-[T2,f2,p12] = No_Aprendi_nada_en_fourier(u2,t2);
+[T,f,p1] = fourier(u1,t1); % calcula transformada de fourier
+[T2,f2,p12] = fourier(u2,t2);
 %% Grafica
 figure()
 plot(f,p1)
 figure()
 plot(f2,p12)
 %% Aplicación del filtro
-fs=(1/T(1))/2; %Niquist
+fs=(1/T(1))/2; % frecuencia de Nyquist
 fs2=(1/T2(1))/2;
 % Frecuencias raras vistas en la grafica anterior
 u1 = fn_filtro(T,u1,2,[59,61]); %Se realiza un filtro notch a 60 Hz para asegurarnos de eliminar el ruido electrico
@@ -354,9 +355,7 @@ best=modelos_r(best);
 present(best) % Se muestra el mejor modelo y con este se trabaja
 %% 3 Analisis de sensibilidad
 % Validación del modelo encontrado en tiempo
-M_ARX_c = d2c(M_ARX,'tustin')
-%oe
- 
+M_ARX_c = d2c(best,'tustin')
 y_pred_ARX = lsim(M_ARX_c,u1,t1);
 y_pred_v_ARX = lsim(M_ARX_c,uv,tv);
 figure()
@@ -439,7 +438,7 @@ legend('Modelo sujeto 1','Modelo sujeto 2')
 grid on
 %% funciones
 
-function [T,f,p1] = No_Aprendi_nada_en_fourier(in_r,t)
+function [T,f,p1] = fourier(in_r,t)
 Y=fft(in_r); %Transoformada rapida
 L=length(in_r); %N puntos de la función
 p2=abs(Y/L); 

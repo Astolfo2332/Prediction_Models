@@ -2,8 +2,12 @@ clc;clear vars;close all;clear all;
 %% Nota: 
 %Se hizo la conversión del modelo a versiones anteriores pero posiblemente
 %se generen fallos debido a que hay librerias con problemas para ejecutarse
-%como la electrica, de ser posible correrlo en la versión más reciente. se
-%adjuntan las dos versiones.
+%como la eléctrica, de ser posible correrlo en la versión más reciente. se
+%adjuntan las dos versiones. 
+%Anteriores Modelo_Circuito_Susana.slx
+%Nuevo: Modelo_Circuito.slx
+%En caso de usar el de versiones anteriores Modelo_Circuito_Susana.slx,
+%cambiar todas las ocurrencias de Modelo_Circuito_Susana.slx
 %% Ecuación de transeferencia
 % Se hace inicialmente de manera simbolica para comprobar la ecuación
 syms s F Fo cs cp R x1 x
@@ -25,7 +29,7 @@ f = 1;
 f0 = 1;
 simin=[t.' F.' Fo.'];
 %% Simular con circuito electrico
-% Se simula contra el circuito electrico correspondiente para comprobar la
+% Se simula contra el circuito eléctrico correspondiente para comprobar la
 % validez de la ecuación encontrada teoricamente.
 out=simular(R,cs,cp,f,f0,max(t));
 %% Comparar diferentes fuerzas
@@ -64,7 +68,7 @@ ylim([-0.5 0.5])
 grid on
 hold off
 
-%% Comparar datos legend
+%% Comparar datos 
 % Escogiendo F=F0 para comparar con las diferentes patologías
 F=(0<t)*1;
 Fo=(0<t)*1;
@@ -111,24 +115,24 @@ xlim([0,10]);
 
 end
 
-function [out,out2,out3] =comparedata2(a,b,c,time,patologia,patologia2)
+function [out,out2,out3] =comparedata2(a,b,c,time,patologia,patologia2) %Se usa para comparar las simulaciones de las tres situaciones evaluadas
 sub1="Sano ";
 sub2=patologia+" ";
 sub3=patologia2+" ";
 evaluator(a(1),a(2),a(3))
-out=sim("Modelo_Circuito.slx","StopTime",num2str(time));
-evaluator(b(1),b(2),b(3))
+out=sim("Modelo_Circuito.slx","StopTime",num2str(time)); %Se corre la simulación
+evaluator(b(1),b(2),b(3)) %Toma los valores de resistencia y capacitancia de cada evento evaluado
 out2=sim("Modelo_Circuito.slx","StopTime",num2str(time));
 evaluator(c(1),c(2),c(3))
 out3=sim("Modelo_Circuito.slx","StopTime",num2str(time));
 figure()
-bode(out.bodegraf.values,out2.bodegraf.values,out3.bodegraf.values)
+bode(out.bodegraf.values,out2.bodegraf.values,out3.bodegraf.values) %se produce el diagrama de bode
 h = findobj(gcf, 'type', 'line');
-set(h, 'LineWidth', 2); % Establecer grosor de línea a 2
+set(h, 'LineWidth', 2); % 
 title(["Diagrama de Bode"])
 legend(sub1,sub2,sub3)
 grid on
-x=out.simout.signals.values(:,1);
+x=out.simout.signals.values(:,1); %Se guardan las salidas de las simulaciones efectuadas
 y=out.simout.time;
 x2=out2.simout.signals.values(:,1);
 y2=out2.simout.time;
@@ -136,12 +140,12 @@ x3=out3.simout.signals.values(:,1);
 y3=out3.simout.time;
 % Comparación entre sano y patología
 figure()
-plot(y,x,"r",'LineWidth',2)
+plot(y,x,'LineWidth',2)
 hold on
 xlabel("Tiempo(s)")
 ylabel("Desplazamiento (m)")
-plot(y2,x2,"m",'LineWidth',2)
-plot(y3,x3,"k",'LineWidth',2)
+plot(y2,x2,'LineWidth',2) %Se grafican las salidas de la simulación
+plot(y3,x3,'LineWidth',2)
 title("Comparación de respuesta")
 legend(sub1,sub2,sub3)
 xlim([0,15])

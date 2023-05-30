@@ -51,10 +51,11 @@ title("Salida de validación")
 pos_off=find(t1<=1.33);
 offu1=mean(u1(pos_off));
 offu2=mean(u2(pos_off));
-u1=u1-ones(size(u1,1),1)*offu1; 
+u1=u1-ones(size(u1,1),1)*offu1;  % eliminación de offset
 u2=u2-ones(size(u2,1),1)*offu2; 
 uv=uv-ones(size(uv,1),1)*4;
-% No se alcanza a ver claramente el punto estable
+% No se alcanza a ver claramente el punto estable, entonces se elimina el
+% offset como el promedio de toda la señal
 offy1=mean(y1);
 offy2=mean(y2);
 offyv=mean(yv);
@@ -128,15 +129,15 @@ title("Salida 2")
 %% Filtrado
 % En este caso la señal de entrada de prueba tiene bastante ruido, así que
 % utilizaremos un filtrado por fourier
-[T,f,p1] = No_Aprendi_nada_en_fourier(u1,t1);
-[T2,f2,p12] = No_Aprendi_nada_en_fourier(u2,t2);
+[T,f,p1] = fourier(u1,t1); % calcula transformada de fourier
+[T2,f2,p12] = fourier(u2,t2);
 %% Grafica
 figure()
 plot(f,p1)
 figure()
 plot(f2,p12)
 %% Aplicación del filtro
-fs=(1/T(1))/2; %Niquist
+fs=(1/T(1))/2; % frecuencia de Nyquist
 fs2=(1/T2(1))/2;
 % Frecuencias raras vistas en la grafica anterior
 u1 = fn_filtro(T,u1,2,[59,61]); %Se realiza un filtro notch a 60 Hz para asegurarnos de eliminar el ruido electrico
@@ -337,19 +338,19 @@ present(tabla)
 %% Selección del mejor modelo
 N=length(t1);
 i=0;
-vecto_vmin_tabla=[];
+Vvmin=[];
 for a=1:1:4 %Porque consideramos una buena variacion de 1 hasta 4 en pasos de 1 ya que empleamos 4 modelos
     orden_P_aic=str2num(ordenes(i+1,1));
     %Se utiliza la función creada de aic, para ver el menor valor de error 
     d4 = sum(orden_P_aic);
     [vmin_tabla]=aic_(error_funcion(i+1,1),d4,N);
     %Se genera un vector con el Vmin
-    vecto_vmin_tabla=[vecto_vmin_tabla;vmin_tabla];
+    Vvmin=[Vvmin;vmin_tabla];
     i=i+1;
 end
 %Se encuentra el menor valor de vmin y se presenta su valor 
-vecto_vmin_tabla_f=min(vecto_vmin_tabla)
-best=find(vecto_vmin_tabla==vecto_vmin_tabla_f);
+Vvmin_f=min(Vvmin)
+best=find(Vvmin==Vvmin_f);
 best=modelos_r(best);
 present(best) % Se muestra el mejor modelo y con este se trabaja
 %% 3 Analisis de sensibilidad
@@ -437,7 +438,7 @@ legend('Modelo sujeto 1','Modelo sujeto 2')
 grid on
 %% funciones
 
-function [T,f,p1] = No_Aprendi_nada_en_fourier(in_r,t)
+function [T,f,p1] = fourier(in_r,t)
 Y=fft(in_r); %Transoformada rapida
 L=length(in_r); %N puntos de la función
 p2=abs(Y/L); 
@@ -468,8 +469,5 @@ E=x1-x2;
 err=sqrt(sum(E.^2,"omitnan"))/L1;
 end
 function [vmin] = aic_(V,d,N)
-    %V = LSE
-    %d = Sum coef
-    %N = #Muestras
     vmin = log10(V)+(2*d/N);
 end
