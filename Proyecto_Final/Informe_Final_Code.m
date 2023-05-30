@@ -310,31 +310,7 @@ present(M_bj)
 %%
 figure()
 [ybj,fit_ev_bj,xbj,ybj2,fit_val_bj,xbj2,e_bj]=comparedata(M_bj,data_1,data_2,"(BJ)")
-%% TABLA
-modelos_r=[M_ARX ;M_armax; M_oe; M_bj];
-modelos = ["ARX";"ARMAX";"OE";"BJ"];
-fit_e = [fit_ev_arx;fit_ev_armax;fit_ev_oe;fit_ev_bj]; % Evaluacion
-fit_v = [fit_val_arx;fit_val_armax;fit_val_oe;fit_val_bj]; % Validación
 
-e_arxAIC = min(vmod(1,:));
-error_AIC = [e_arxAIC;Vmin_armax;Vmin_Oe; Vmin_Bj]; % Errores AIC
-error_funcion = [e_arx;e_armax;e_oe; e_bj];
-% mejor orden
-orden_f_arx_s = string(orden_arx);
-orden_f_arx_s = join(orden_f_arx_s);
-orden_f_armax_s = string(modelsarmax{I1,2});
-orden_f_armax_s = join(orden_f_armax_s);
-orden_f_oe_s = string(modelsoe{I2,2});
-orden_f_oe_s = join(orden_f_oe_s);
-orden_f_bj_s = string(modelsbj{I3,2});
-orden_f_bj_s = join(orden_f_bj_s);
-
-% matriz de ordenes
-ordenes = [orden_f_arx_s;orden_f_armax_s;orden_f_oe_s;orden_f_bj_s];
-
-% tabla
-tabla = table(modelos,fit_e,fit_v,error_AIC,error_funcion,ordenes);
-present(tabla)
 %% Selección del mejor modelo
 N=length(t1);
 i=0;
@@ -353,6 +329,31 @@ Vvmin_f=min(Vvmin)
 best=find(Vvmin==Vvmin_f);
 best=modelos_r(best);
 present(best) % Se muestra el mejor modelo y con este se trabaja
+%% TABLA
+modelos_r=[M_ARX ;M_armax; M_oe; M_bj];
+modelos = ["ARX";"ARMAX";"OE";"BJ"];
+fit_e = [fit_ev_arx;fit_ev_armax;fit_ev_oe;fit_ev_bj]; % Evaluacion
+fit_v = [fit_val_arx;fit_val_armax;fit_val_oe;fit_val_bj]; % Validación
+
+% e_arxAIC = min(vmod(1,:));
+% error_AIC = [e_arxAIC;Vmin_armax;Vmin_Oe; Vmin_Bj]; % Errores AIC
+error_funcion = [e_arx;e_armax;e_oe; e_bj];
+% mejor orden
+orden_f_arx_s = string(orden_arx);
+orden_f_arx_s = join(orden_f_arx_s);
+orden_f_armax_s = string(modelsarmax{I1,2});
+orden_f_armax_s = join(orden_f_armax_s);
+orden_f_oe_s = string(modelsoe{I2,2});
+orden_f_oe_s = join(orden_f_oe_s);
+orden_f_bj_s = string(modelsbj{I3,2});
+orden_f_bj_s = join(orden_f_bj_s);
+
+% matriz de ordenes
+ordenes = [orden_f_arx_s;orden_f_armax_s;orden_f_oe_s;orden_f_bj_s];
+
+% tabla
+tabla = table(modelos,fit_e,fit_v,Vvmin,error_funcion,ordenes);
+present(tabla)
 %% 3 Analisis de sensibilidad
 % Validación del modelo encontrado en tiempo
 M_ARX_c = d2c(best,'tustin')
