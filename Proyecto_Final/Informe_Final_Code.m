@@ -1,10 +1,15 @@
 %% Carga
+%Se limpia el espacio y se carga la información
 clc; clear all; close all;
 load("Experimento_A.mat")
+%Se establecen variables globales que se utilizaran luego
 global u2 y2 t2
+%Se organizan los vectores de tiempo
 t1=t1.';
 t2=t2.';
 %% 0.1 Exploración de los datos
+% inicialmente graficamos los datos para empezar la parte de
+% preprocesamiento
 figure()
 % Sujeto 1
 subplot(2,2,1)
@@ -40,8 +45,9 @@ title("Entrada de validación")
 subplot(1,2,2)
 plot(tv,yv)
 title("Salida de validación")
-%% 1 Filtrados iniciales
+%% 1 Preprocesamiento
 %% Recorte offset 
+%Se toma un promedio del punto estable para hacer el recorte del offset
 pos_off=find(t1<=1.33);
 offu1=mean(u1(pos_off));
 offu2=mean(u2(pos_off));
@@ -56,6 +62,7 @@ y1=y1-ones(size(y1,1),1)*offy1;
 yv=yv-ones(size(yv,1),1)*offyv;
 y2=y2-ones(size(y2,1),1)*offy2; 
 %% Grafica
+%Se grafican como van quedando las graficas
 figure()
 subplot(3,2,1)
 plot(t1,u1)
@@ -76,6 +83,8 @@ subplot(3,2,6)
 plot(t2,y2)
 title("Salida 2")
 %% Recorte de inicio
+%Se hace un recorte inicial de la seccion de la señal que no presenta un
+%comportamiento perdiodico
 recorte=find((1.33<=t1));
 
 t1=t1(recorte)-1.33;
@@ -85,7 +94,9 @@ recorte=find(1.33<=t2);
 t2=t2(recorte)-1.33;
 u2=u2(recorte);
 y2=y2(recorte);
-%%
+%% Eliminación de la tendencia polinomial
+% Se elimina utilizando la función dtrend en este caso de grado 2 para
+% todas las señales
 n=2;
 u1=detrend(u1,n);
 y1=detrend(y1,n);
@@ -128,13 +139,15 @@ plot(f2,p12)
 fs=(1/T(1))/2; %Niquist
 fs2=(1/T2(1))/2;
 % Frecuencias raras vistas en la grafica anterior
-u1 = fn_filtro(T,u1,2,[59,61]);
-[num,dem]=butter(2,59/fs,"low"); %Se hace un pasa bajas
+u1 = fn_filtro(T,u1,2,[59,61]); %Se realiza un filtro notch a 60 Hz para asegurarnos de eliminar el ruido electrico
+[num,dem]=butter(2,59/fs,"low"); %Se hace un pasa bajas, debido a la recurrencia del ruido electrico y que no tenemos información importante en estos rangos
 u1=filtfilt(num,dem,u1);
+%Se grafica la respuesta del filtro en terminos de freciencia
 figure()
 freqz(num,dem,4000,fs)
+%Mismo proceso para la otra señal
 u2 = fn_filtro(T2,u2,2,[59,61]);
-[num,dem]=butter(2,59/fs2,"low"); %Se hace un pasa bajas
+[num,dem]=butter(2,59/fs2,"low"); 
 u2=filtfilt(num,dem,u2);
 figure()
 freqz(num,dem,4000,fs)
@@ -297,6 +310,7 @@ present(M_bj)
 figure()
 [ybj,fit_ev_bj,xbj,ybj2,fit_val_bj,xbj2,e_bj]=comparedata(M_bj,data_1,data_2,"(BJ)")
 %% TABLA
+modelos_r=[M_ARX ;M_armax; M_oe; M_bj];
 modelos = ["ARX";"ARMAX";"OE";"BJ"];
 fit_e = [fit_ev_arx;fit_ev_armax;fit_ev_oe;fit_ev_bj]; % Evaluacion
 fit_v = [fit_val_arx;fit_val_armax;fit_val_oe;fit_val_bj]; % Validación
@@ -320,11 +334,27 @@ ordenes = [orden_f_arx_s;orden_f_armax_s;orden_f_oe_s;orden_f_bj_s];
 % tabla
 tabla = table(modelos,fit_e,fit_v,error_AIC,error_funcion,ordenes);
 present(tabla)
+%% Selección del mejor modelo
+N=length(t1);
+i=0;
+vecto_vmin_tabla=[];
+for a=1:1:4 %Porque consideramos una buena variacion de 1 hasta 4 en pasos de 1 ya que empleamos 4 modelos
+    orden_P_aic=str2num(ordenes(i+1,1));
+    %Se utiliza la función creada de aic, para ver el menor valor de error 
+    d4 = sum(orden_P_aic);
+    [vmin_tabla]=aic_(error_funcion(i+1,1),d4,N);
+    %Se genera un vector con el Vmin
+    vecto_vmin_tabla=[vecto_vmin_tabla;vmin_tabla];
+    i=i+1;
+end
+%Se encuentra el menor valor de vmin y se presenta su valor 
+vecto_vmin_tabla_f=min(vecto_vmin_tabla)
+best=find(vecto_vmin_tabla==vecto_vmin_tabla_f);
+best=modelos_r(best);
+present(best) % Se muestra el mejor modelo y con este se trabaja
 %% 3 Analisis de sensibilidad
 % Validación del modelo encontrado en tiempo
-M_ARX_c = d2c(M_ARX,'tustin')
-%oe
- 
+M_ARX_c = d2c(best,'tustin')
 y_pred_ARX = lsim(M_ARX_c,u1,t1);
 y_pred_v_ARX = lsim(M_ARX_c,uv,tv);
 figure()
@@ -349,8 +379,10 @@ H=tf(M_ARX_c)
 [num,dem]=tfdata(H,"v");
 pararef=[num(1) num(2) num(3) num(4) dem(1) dem(2) dem(3) dem(4)];
 step=2;
+%Rango de estimación de sensibilidad
 range=[-50 50];
-[J,para_change]= fn_sensible(pararef,step,range); %Recordar cambiar la funcion a evaluar
+%Busqueda de parametros más sensibles
+[J,para_change]= fn_sensible(pararef,step,range); 
 %% Graf sensible
 figure()
 for i=1:length(pararef)
@@ -377,18 +409,19 @@ disp(thetha);
 disp(output)
 %% Graficar Volumen real Vs. Volumen predicho (Sujeto 2)
 figure()
+%se extraen los mejores coeficientes de los parametros encontrados
 num(4)=thetha(1);
 dem(3)=thetha(2);
 
-Hs=tf(num,dem);
-ypred=lsim(Hs,u2,t2);
-offset=min(y2);
+Hs=tf(num,dem); %Se genera la función de trasnferencia adecuada
+ypred=lsim(Hs,u2,t2); %Se grafica con la función entrada del paciente 2
+offset=min(y2); %Se le agrega el offset eliminado en la parte de preprocesamiento
 graf_ypred=ypred-offset;
 graf_y2=y2-offset;
 plot(t2,graf_ypred,'k-', 'LineWidth', 2); hold on
 plot(t2,graf_y2, 'color',[0.3 0.7 0.81], 'LineWidth', 2);
-errorr(ypred,y2)
-corrcoef(ypred,y2)
+errorr(ypred,y2) % Se estima el error
+corrcoef(ypred,y2) %Se estima la correlación
 grid on;
 legend("Predicha", "Real")
 title('Volumen real Vs. Volumen predicho (Sujeto 2)')
@@ -433,4 +466,10 @@ function err = errorr(x1,x2)
 L1=length(x1);
 E=x1-x2;
 err=sqrt(sum(E.^2,"omitnan"))/L1;
+end
+function [vmin] = aic_(V,d,N)
+    %V = LSE
+    %d = Sum coef
+    %N = #Muestras
+    vmin = log10(V)+(2*d/N);
 end
